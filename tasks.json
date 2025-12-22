@@ -1,0 +1,826 @@
+{
+  "name": "Meal Prep AI - Fitness-Focused Recipe Platform",
+  "description": "A web application that generates meal prep plans based on available ingredients, optimized for fitness goals (weight loss, maintenance, muscle gain). Users input fridge contents and receive recipe suggestions with nutrition info, fridge life tracking, and shopping lists.",
+  "timeline": "12 weeks to launch",
+  "tech_stack": {
+    "frontend": "Next.js 14 (App Router), TypeScript, Tailwind CSS",
+    "backend": "Next.js API Routes",
+    "database": "Supabase (PostgreSQL)",
+    "auth": "Supabase Auth (email only for MVP)",
+    "ai": "Claude API (Sonnet 4.5)",
+    "payments": "Stripe",
+    "hosting": "Vercel"
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Foundation & Setup",
+      "duration": "Week 1-2",
+      "tasks": [
+        {
+          "id": "1.1",
+          "title": "Initialize Next.js 14 project with TypeScript",
+          "description": "Create new Next.js project using App Router, configure TypeScript, ESLint, and Prettier. Set up project structure with /app, /components, /lib, /types directories.",
+          "priority": "critical",
+          "estimated_hours": 2,
+          "dependencies": [],
+          "acceptance_criteria": [
+            "Next.js 14 project running on localhost:3000",
+            "TypeScript configured with strict mode",
+            "Folder structure created: /app, /components, /lib, /types, /hooks",
+            "ESLint and Prettier configured"
+          ]
+        },
+        {
+          "id": "1.2",
+          "title": "Install and configure Tailwind CSS",
+          "description": "Set up Tailwind CSS with custom theme colors for fitness branding. Configure responsive breakpoints and custom utilities.",
+          "priority": "critical",
+          "estimated_hours": 1,
+          "dependencies": ["1.1"],
+          "acceptance_criteria": [
+            "Tailwind CSS working with hot reload",
+            "Custom color palette defined (primary, secondary, success, warning)",
+            "Typography and spacing utilities configured"
+          ]
+        },
+        {
+          "id": "1.3",
+          "title": "Set up Supabase project and local configuration",
+          "description": "Create Supabase project, generate API keys, configure environment variables, install Supabase client libraries.",
+          "priority": "critical",
+          "estimated_hours": 2,
+          "dependencies": ["1.1"],
+          "acceptance_criteria": [
+            "Supabase project created",
+            ".env.local file with NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY",
+            "@supabase/supabase-js installed",
+            "Supabase client utility created in /lib/supabase.ts"
+          ]
+        },
+        {
+          "id": "1.4",
+          "title": "Design and create database schema",
+          "description": "Create SQL schema for users, ingredients, user_ingredients, user_favorites, usage_tracking tables. Set up RLS policies.",
+          "priority": "critical",
+          "estimated_hours": 3,
+          "dependencies": ["1.3"],
+          "sql_schema": true,
+          "acceptance_criteria": [
+            "Tables created: users, ingredients (500 items), user_ingredients, user_favorites, usage_tracking",
+            "Foreign key constraints defined",
+            "Row Level Security (RLS) policies enabled",
+            "Indexes on frequently queried columns"
+          ]
+        },
+        {
+          "id": "1.5",
+          "title": "Seed ingredients database with 500 fitness-focused items",
+          "description": "Create seed data for 500 common ingredients with categories (proteins, vegetables, grains, spices, etc.), average prices, and standard measurements. Focus on fitness-friendly whole foods.",
+          "priority": "critical",
+          "estimated_hours": 4,
+          "dependencies": ["1.4"],
+          "acceptance_criteria": [
+            "500 ingredients seeded with: name, category, avg_price, unit, calories_per_100g",
+            "Categories: lean proteins (chicken, fish, turkey), vegetables, fruits, whole grains, healthy fats, spices",
+            "CSV or JSON seed file created",
+            "Seed script executable via npm command"
+          ]
+        },
+        {
+          "id": "1.6",
+          "title": "Set up Supabase Auth with email authentication",
+          "description": "Configure Supabase Auth for email/password authentication. Create auth context provider and hooks.",
+          "priority": "critical",
+          "estimated_hours": 3,
+          "dependencies": ["1.3"],
+          "acceptance_criteria": [
+            "Auth context provider in /contexts/AuthContext.tsx",
+            "useAuth() hook for accessing auth state",
+            "Email confirmation flow configured",
+            "Password reset flow working"
+          ]
+        },
+        {
+          "id": "1.7",
+          "title": "Create authentication pages (login, signup, reset password)",
+          "description": "Build responsive auth pages with form validation. Include error handling and loading states.",
+          "priority": "critical",
+          "estimated_hours": 4,
+          "dependencies": ["1.2", "1.6"],
+          "acceptance_criteria": [
+            "/app/login/page.tsx created with email/password form",
+            "/app/signup/page.tsx with validation (email format, password strength)",
+            "/app/reset-password/page.tsx for password recovery",
+            "Form validation using react-hook-form or similar",
+            "Loading states and error messages displayed"
+          ]
+        },
+        {
+          "id": "1.8",
+          "title": "Create protected route middleware",
+          "description": "Implement Next.js middleware to protect authenticated routes and check subscription tier.",
+          "priority": "high",
+          "estimated_hours": 2,
+          "dependencies": ["1.6"],
+          "acceptance_criteria": [
+            "middleware.ts created in project root",
+            "Redirects unauthenticated users to /login",
+            "Checks user tier (free/paid) for feature access",
+            "Public routes allowed: /, /login, /signup, /reset-password"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Core UI Components & Ingredient Input",
+      "duration": "Week 3-4",
+      "tasks": [
+        {
+          "id": "2.1",
+          "title": "Create main dashboard layout and navigation",
+          "description": "Build responsive dashboard with sidebar navigation, header with user menu, and main content area. Mobile-first design.",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["1.2", "1.7"],
+          "acceptance_criteria": [
+            "Dashboard layout component in /components/layouts/DashboardLayout.tsx",
+            "Responsive navigation (hamburger menu on mobile)",
+            "User menu with logout option",
+            "Active route highlighting"
+          ]
+        },
+        {
+          "id": "2.2",
+          "title": "Build ingredient autocomplete input component",
+          "description": "Create searchable autocomplete input that queries the 500-ingredient database. Support adding multiple ingredients with quantities.",
+          "priority": "critical",
+          "estimated_hours": 6,
+          "dependencies": ["1.5", "2.1"],
+          "acceptance_criteria": [
+            "IngredientSearch component with debounced search",
+            "Dropdown shows matching ingredients as user types",
+            "Can select ingredient and specify quantity/unit",
+            "Selected ingredients displayed as removable chips/tags",
+            "API route /api/ingredients/search for autocomplete"
+          ]
+        },
+        {
+          "id": "2.3",
+          "title": "Create 'My Fridge' page with ingredient management",
+          "description": "Build the main page where users input and manage their available ingredients. Include save/load functionality.",
+          "priority": "critical",
+          "estimated_hours": 5,
+          "dependencies": ["2.2"],
+          "acceptance_criteria": [
+            "/app/dashboard/fridge/page.tsx created",
+            "Users can add ingredients with quantities",
+            "Ingredients saved to user_ingredients table",
+            "Edit and delete ingredients functionality",
+            "Visual grouping by category (proteins, veggies, etc.)",
+            "Clear all option with confirmation"
+          ]
+        },
+        {
+          "id": "2.4",
+          "title": "Design and implement goal selection component",
+          "description": "Create UI for users to select their fitness goal: Lose Weight, Maintain, or Gain Muscle. Save preference to user profile.",
+          "priority": "high",
+          "estimated_hours": 2,
+          "dependencies": ["2.1"],
+          "acceptance_criteria": [
+            "GoalSelector component with 3 options (radio buttons or cards)",
+            "Visual icons for each goal",
+            "Goal saved to users table (goal_type column)",
+            "Goal displayed in dashboard header",
+            "Can change goal at any time"
+          ]
+        },
+        {
+          "id": "2.5",
+          "title": "Create recipe card component (simple mode)",
+          "description": "Design reusable recipe card component showing: recipe name, cooking time, servings, fridge life indicator, and ingredient match percentage.",
+          "priority": "high",
+          "estimated_hours": 3,
+          "dependencies": ["1.2"],
+          "acceptance_criteria": [
+            "RecipeCard component in /components/recipes/RecipeCard.tsx",
+            "Shows: title, cook time, servings, fridge life badge",
+            "Color-coded fridge life (green 4+ days, yellow 2-3 days, red same day)",
+            "Ingredient match indicator (e.g., '8/8 ingredients ✓')",
+            "Responsive design (grid layout on desktop)"
+          ]
+        },
+        {
+          "id": "2.6",
+          "title": "Build recipe detail modal/page (simple mode)",
+          "description": "Create detailed view for a single recipe with ingredients list, instructions, and cooking time. Simple mode only (no nutrition info yet).",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["2.5"],
+          "acceptance_criteria": [
+            "RecipeDetail component or /app/dashboard/recipe/[id]/page.tsx",
+            "Displays: full ingredient list with quantities, step-by-step instructions",
+            "Shows which ingredients user has vs needs to buy",
+            "Print-friendly formatting",
+            "Back button to recipe list"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "AI Recipe Generation Engine",
+      "duration": "Week 5-6",
+      "tasks": [
+        {
+          "id": "3.1",
+          "title": "Set up Claude API integration",
+          "description": "Install Anthropic SDK, configure API key, create utility functions for Claude API calls with error handling and rate limiting.",
+          "priority": "critical",
+          "estimated_hours": 2,
+          "dependencies": ["1.1"],
+          "acceptance_criteria": [
+            "@anthropic-ai/sdk installed",
+            "ANTHROPIC_API_KEY in .env.local",
+            "Utility function in /lib/claude.ts for API calls",
+            "Error handling and retry logic",
+            "Token usage logging"
+          ]
+        },
+        {
+          "id": "3.2",
+          "title": "Design and test recipe generation prompt",
+          "description": "Create optimized Claude prompt template for generating fitness-focused recipes. Test with various ingredient combinations and goals. Focus on high-protein, balanced macros.",
+          "priority": "critical",
+          "estimated_hours": 6,
+          "dependencies": ["3.1"],
+          "acceptance_criteria": [
+            "Prompt template accepts: ingredient list, goal (lose/maintain/gain), cuisine preferences",
+            "Returns JSON with: recipe name, ingredients, instructions, prep/cook time, servings, calories, macros, fridge life",
+            "Tested with 20+ ingredient combinations",
+            "Consistent JSON output structure",
+            "Fitness-optimized recipes (high protein, quality carbs, healthy fats)"
+          ]
+        },
+        {
+          "id": "3.3",
+          "title": "Create recipe generation API endpoint",
+          "description": "Build /api/recipes/generate endpoint that takes user ingredients and goal, calls Claude API, returns 3 makeable recipes + 1 'almost there' recipe.",
+          "priority": "critical",
+          "estimated_hours": 5,
+          "dependencies": ["3.2", "2.3"],
+          "acceptance_criteria": [
+            "POST /api/recipes/generate endpoint created",
+            "Accepts: user_id, ingredient_ids[], goal_type",
+            "Returns: 3 recipes with 100% ingredient match, 1 recipe with 70-95% match",
+            "Response time < 15 seconds",
+            "Error handling for API failures",
+            "Logs generation to usage_tracking table"
+          ]
+        },
+        {
+          "id": "3.4",
+          "title": "Implement rate limiting for free vs paid tiers",
+          "description": "Create middleware to enforce generation limits: 1/day for free users, 10/day for paid users. Track usage in database.",
+          "priority": "high",
+          "estimated_hours": 3,
+          "dependencies": ["3.3"],
+          "acceptance_criteria": [
+            "Rate limit check in /api/recipes/generate",
+            "Free tier: max 1 generation/day (resets midnight UTC)",
+            "Paid tier: max 10 generations/day",
+            "Returns 429 error when limit exceeded",
+            "Usage counter displayed in UI",
+            "Reset mechanism at midnight"
+          ]
+        },
+        {
+          "id": "3.5",
+          "title": "Build 'Generate Meal Plan' page with results display",
+          "description": "Create main page where users click 'Generate' and see their 3+1 recipes. Show loading state during generation (~10-15 sec).",
+          "priority": "critical",
+          "estimated_hours": 5,
+          "dependencies": ["3.3", "2.5"],
+          "acceptance_criteria": [
+            "/app/dashboard/generate/page.tsx created",
+            "Big 'Generate Meal Plan' button (disabled if no ingredients)",
+            "Loading animation with progress indicator",
+            "Displays 3 recipe cards (100% match) in primary section",
+            "Displays 1 'almost there' recipe in separate section with shopping list preview",
+            "Error handling with user-friendly messages"
+          ]
+        },
+        {
+          "id": "3.6",
+          "title": "Implement 'almost there' recipe logic with shopping suggestions",
+          "description": "Algorithm to find recipes missing 1-3 ingredients, calculate cost of missing items, display shopping suggestion.",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["3.3"],
+          "acceptance_criteria": [
+            "Identifies recipes where user has 70-95% of ingredients",
+            "Shows missing ingredients list with quantities",
+            "Calculates estimated cost from ingredients database",
+            "Displays: 'Buy these 2 items for $5.50 to make this recipe'",
+            "Badge indicating 'Missing X ingredients'"
+          ]
+        },
+        {
+          "id": "3.7",
+          "title": "Add fridge life calculation and display",
+          "description": "Create database or JSON file with fridge life data for recipe types. Display color-coded badges on recipe cards.",
+          "priority": "high",
+          "estimated_hours": 3,
+          "dependencies": ["2.5"],
+          "acceptance_criteria": [
+            "Fridge life data for common recipe types (chicken dishes: 3-4 days, fish: 2 days, beef stew: 4-5 days, etc.)",
+            "Logic to determine fridge life based on primary protein/ingredients",
+            "Color-coded badges: 🟢 4+ days, 🟡 2-3 days, 🔴 same day, ❄️ freezer friendly",
+            "Tooltip with storage tips (e.g., 'Store in airtight container')"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Paid Features & Monetization",
+      "duration": "Week 7-8",
+      "tasks": [
+        {
+          "id": "4.1",
+          "title": "Set up Stripe integration for subscriptions",
+          "description": "Install Stripe SDK, create products/prices in Stripe dashboard, implement checkout flow.",
+          "priority": "critical",
+          "estimated_hours": 4,
+          "dependencies": ["1.1"],
+          "acceptance_criteria": [
+            "stripe package installed",
+            "STRIPE_SECRET_KEY and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY configured",
+            "Product created in Stripe: 'Meal Prep Pro' at $7.99/month",
+            "Stripe webhook endpoint created",
+            "Test mode working with test cards"
+          ]
+        },
+        {
+          "id": "4.2",
+          "title": "Create subscription management API endpoints",
+          "description": "Build API routes for creating checkout sessions, handling webhooks, and managing subscription status.",
+          "priority": "critical",
+          "estimated_hours": 5,
+          "dependencies": ["4.1"],
+          "acceptance_criteria": [
+            "POST /api/stripe/create-checkout-session endpoint",
+            "POST /api/stripe/webhook for Stripe events",
+            "Updates user.subscription_tier in database on successful payment",
+            "Handles subscription.created, subscription.updated, subscription.deleted events",
+            "GET /api/stripe/portal-session for customer portal access"
+          ]
+        },
+        {
+          "id": "4.3",
+          "title": "Build upgrade/pricing page",
+          "description": "Create marketing page showing free vs paid tier comparison, benefits, and upgrade CTA button.",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["4.1"],
+          "acceptance_criteria": [
+            "/app/dashboard/upgrade/page.tsx created",
+            "Feature comparison table (free vs pro)",
+            "Highlights: 10 gens/day, 8 recipes, detailed mode, nutrition, shopping lists",
+            "'Upgrade to Pro' button redirects to Stripe checkout",
+            "Current subscription status displayed if already paid"
+          ]
+        },
+        {
+          "id": "4.4",
+          "title": "Implement detailed mode toggle with nutrition info",
+          "description": "Add toggle in UI to switch between simple/detailed mode. Detailed mode shows calories, macros, cost estimate, prep/cook time breakdown. PAID ONLY.",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["2.5", "4.2"],
+          "acceptance_criteria": [
+            "Toggle switch in recipe card (only shows if user is paid tier)",
+            "Detailed mode displays: calories, protein/carbs/fats, estimated cost, prep vs cook time",
+            "Free users see 'Upgrade to Pro' badge on toggle",
+            "Smooth transition animation between modes",
+            "User preference saved (local storage or database)"
+          ]
+        },
+        {
+          "id": "4.5",
+          "title": "Build shopping list generator (paid feature)",
+          "description": "Aggregate all missing ingredients across selected recipes into one consolidated shopping list with total cost estimate.",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["3.6", "4.2"],
+          "acceptance_criteria": [
+            "ShoppingList component accessible from meal plan results",
+            "Combines missing ingredients from 'almost there' recipes",
+            "Groups by category (proteins, produce, pantry)",
+            "Shows quantity needed and unit",
+            "Total cost estimate at bottom",
+            "Print or email functionality",
+            "Only accessible to paid users"
+          ]
+        },
+        {
+          "id": "4.6",
+          "title": "Create favorites system (paid feature)",
+          "description": "Allow paid users to save/favorite recipes for quick access later. Build favorites library page.",
+          "priority": "medium",
+          "estimated_hours": 4,
+          "dependencies": ["2.6", "4.2"],
+          "acceptance_criteria": [
+            "Heart/star icon on recipe cards to save favorites",
+            "Saves full recipe JSON to user_favorites table",
+            "/app/dashboard/favorites/page.tsx displays saved recipes",
+            "Can remove from favorites",
+            "Search/filter favorites by cuisine, protein type, etc.",
+            "Only accessible to paid users"
+          ]
+        },
+        {
+          "id": "4.7",
+          "title": "Add dietary filters and cuisine preferences (paid)",
+          "description": "Create filter UI for dietary restrictions (vegetarian, vegan, gluten-free, dairy-free) and cuisine types. Integrate with recipe generation prompt.",
+          "priority": "medium",
+          "estimated_hours": 3,
+          "dependencies": ["3.2", "4.2"],
+          "acceptance_criteria": [
+            "Filter panel in 'Generate Meal Plan' page",
+            "Dietary filters: vegetarian, vegan, gluten-free, dairy-free (multi-select)",
+            "Cuisine preferences: Italian, Asian, Mexican, Mediterranean, American (multi-select)",
+            "Filters passed to Claude prompt to adjust recipe generation",
+            "Saved to user preferences",
+            "Only accessible to paid users"
+          ]
+        },
+        {
+          "id": "4.8",
+          "title": "Implement basic budgeting display (paid feature)",
+          "description": "Show cost breakdown: per recipe, per serving, and weekly total. Display in detailed mode and meal plan summary.",
+          "priority": "medium",
+          "estimated_hours": 3,
+          "dependencies": ["4.4"],
+          "acceptance_criteria": [
+            "Each recipe shows: total cost, cost per serving",
+            "Meal plan summary shows: total weekly cost, average cost per meal",
+            "Based on avg_price from ingredients database",
+            "Cost breakdown visible in detailed mode",
+            "Weekly summary card at bottom of meal plan results"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Polish, Testing & Optimization",
+      "duration": "Week 9-10",
+      "tasks": [
+        {
+          "id": "5.1",
+          "title": "Implement comprehensive error handling and loading states",
+          "description": "Add error boundaries, graceful error messages, loading skeletons, and fallback UI throughout the app.",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["3.5"],
+          "acceptance_criteria": [
+            "Error boundary component wraps main app",
+            "Loading skeletons for recipe cards during generation",
+            "User-friendly error messages (avoid technical jargon)",
+            "Retry buttons for failed API calls",
+            "Toast notifications for success/error states"
+          ]
+        },
+        {
+          "id": "5.2",
+          "title": "Add analytics and usage tracking",
+          "description": "Integrate analytics (Vercel Analytics or Posthog) to track: page views, generation clicks, conversion to paid, feature usage.",
+          "priority": "medium",
+          "estimated_hours": 3,
+          "dependencies": ["1.1"],
+          "acceptance_criteria": [
+            "Analytics tool integrated (Vercel Analytics recommended)",
+            "Track events: recipe_generated, upgrade_clicked, favorite_saved",
+            "User cohort tracking (free vs paid behavior)",
+            "Conversion funnel: signup → generate → upgrade",
+            "Privacy-compliant (GDPR considerations)"
+          ]
+        },
+        {
+          "id": "5.3",
+          "title": "Optimize Claude API costs and caching",
+          "description": "Implement caching strategy for common ingredient combinations. Cache popular recipes to reduce API calls.",
+          "priority": "high",
+          "estimated_hours": 4,
+          "dependencies": ["3.3"],
+          "acceptance_criteria": [
+            "Redis or Vercel KV for caching (if budget allows)",
+            "Cache key based on: ingredient_ids + goal + filters",
+            "24-hour cache TTL for generated recipes",
+            "Hit rate monitoring (target: 20%+ cache hits after 1 month)",
+            "Fallback to API if cache miss"
+          ]
+        },
+        {
+          "id": "5.4",
+          "title": "Mobile responsiveness audit and fixes",
+          "description": "Test all pages on mobile devices (iOS/Android), fix layout issues, ensure touch targets are appropriate size.",
+          "priority": "high",
+          "estimated_hours": 5,
+          "dependencies": ["2.1", "2.3", "3.5"],
+          "acceptance_criteria": [
+            "All pages responsive down to 375px width (iPhone SE)",
+            "Touch targets minimum 44x44px",
+            "Mobile navigation menu works smoothly",
+            "Forms are easy to use on mobile keyboards",
+            "No horizontal scrolling",
+            "Tested on real devices (iOS Safari, Android Chrome)"
+          ]
+        },
+        {
+          "id": "5.5",
+          "title": "Create onboarding flow for new users",
+          "description": "Build guided onboarding: welcome message, quick ingredient input tutorial, generate first meal plan. Increase activation rate.",
+          "priority": "medium",
+          "estimated_hours": 4,
+          "dependencies": ["2.3"],
+          "acceptance_criteria": [
+            "Welcome modal on first login",
+            "3-step onboarding: (1) Add ingredients, (2) Select goal, (3) Generate first plan",
+            "Progress indicator",
+            "Can skip onboarding",
+            "Onboarding completion tracked in database",
+            "Success metrics: % of users who complete onboarding"
+          ]
+        },
+        {
+          "id": "5.6",
+          "title": "Add email notifications for key events",
+          "description": "Set up transactional emails: welcome email, subscription confirmation, generation limit reset reminder.",
+          "priority": "low",
+          "estimated_hours": 3,
+          "dependencies": ["1.6", "4.2"],
+          "acceptance_criteria": [
+            "Email service configured (Resend or SendGrid)",
+            "Welcome email on signup with getting started guide",
+            "Payment confirmation email with receipt",
+            "Daily reminder at 11am if user hasn't used their free generation",
+            "Unsubscribe link in all emails"
+          ]
+        },
+        {
+          "id": "5.7",
+          "title": "Performance optimization and SEO",
+          "description": "Optimize images, implement lazy loading, add meta tags for SEO, improve Lighthouse scores.",
+          "priority": "medium",
+          "estimated_hours": 4,
+          "dependencies": ["1.1"],
+          "acceptance_criteria": [
+            "Next.js Image component used for all images",
+            "Lazy loading for recipe cards and images",
+            "Meta tags for all pages (title, description, OG tags)",
+            "Lighthouse score: 90+ performance, 100 accessibility, 100 SEO",
+            "Sitemap.xml generated",
+            "Robots.txt configured"
+          ]
+        },
+        {
+          "id": "5.8",
+          "title": "Write unit tests for critical functions",
+          "description": "Add tests for: ingredient search, recipe generation logic, rate limiting, subscription status checks.",
+          "priority": "medium",
+          "estimated_hours": 6,
+          "dependencies": ["3.3", "3.4", "4.2"],
+          "acceptance_criteria": [
+            "Jest and React Testing Library configured",
+            "Tests for: /api/recipes/generate, rate limiting logic, subscription tier checks",
+            "Test coverage >60% for /lib and /api directories",
+            "CI/CD integration (GitHub Actions runs tests on push)",
+            "All tests passing before deployment"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "Beta Testing & Pre-Launch",
+      "duration": "Week 11",
+      "tasks": [
+        {
+          "id": "6.1",
+          "title": "Deploy to Vercel production environment",
+          "description": "Set up production environment on Vercel, configure environment variables, custom domain, SSL certificate.",
+          "priority": "critical",
+          "estimated_hours": 2,
+          "dependencies": ["5.4"],
+          "acceptance_criteria": [
+            "Project deployed to Vercel",
+            "Production environment variables configured",
+            "Custom domain connected (if available)",
+            "SSL certificate active (HTTPS)",
+            "Vercel Analytics enabled"
+          ]
+        },
+        {
+          "id": "6.2",
+          "title": "Recruit and onboard 10-20 beta testers",
+          "description": "Invite beta testers, provide them with test accounts (some free, some paid), create feedback collection system.",
+          "priority": "high",
+          "estimated_hours": 3,
+          "dependencies": ["6.1"],
+          "acceptance_criteria": [
+            "10-20 beta testers recruited (mix of free and paid tier)",
+            "Welcome email with instructions sent",
+            "Feedback form created (Google Form or Typeform)",
+            "Private Discord/Slack channel for feedback",
+            "Testers given 2-week free Pro access"
+          ]
+        },
+        {
+          "id": "6.3",
+          "title": "Monitor beta usage and collect feedback",
+          "description": "Track beta tester activity, identify bugs, collect qualitative feedback on UX, recipe quality, and features.",
+          "priority": "high",
+          "estimated_hours": 10,
+          "dependencies": ["6.2"],
+          "acceptance_criteria": [
+            "Daily check-in on analytics (generation rate, errors, conversion)",
+            "At least 10 feedback responses collected",
+            "Bug list prioritized by severity",
+            "User satisfaction score (NPS or 1-5 rating)",
+            "Identify top 3 requested features"
+          ]
+        },
+        {
+          "id": "6.4",
+          "title": "Fix critical bugs identified in beta",
+          "description": "Address P0 and P1 bugs found during beta testing. Focus on blockers and major UX issues.",
+          "priority": "critical",
+          "estimated_hours": 15,
+          "dependencies": ["6.3"],
+          "acceptance_criteria": [
+            "All P0 (critical) bugs fixed",
+            "80%+ of P1 (high priority) bugs fixed",
+            "No known data loss or security issues",
+            "Recipe generation success rate >95%",
+            "Payment flow working without errors"
+          ]
+        },
+        {
+          "id": "6.5",
+          "title": "Implement key UX improvements from feedback",
+          "description": "Based on beta feedback, make high-impact UX improvements (e.g., simplify ingredient input, improve recipe readability).",
+          "priority": "high",
+          "estimated_hours": 8,
+          "dependencies": ["6.3"],
+          "acceptance_criteria": [
+            "At least 3 UX improvements implemented",
+            "Changes based on recurring feedback themes",
+            "Before/after comparison documented",
+            "Beta testers re-test improved areas"
+          ]
+        },
+        {
+          "id": "6.6",
+          "title": "Create FAQ and help documentation",
+          "description": "Write help docs for common questions: How to add ingredients? How does meal planning work? How to cancel subscription?",
+          "priority": "medium",
+          "estimated_hours": 4,
+          "dependencies": ["6.3"],
+          "acceptance_criteria": [
+            "/app/help/page.tsx created with FAQ sections",
+            "Cover: account setup, ingredient input, recipe generation, subscription, troubleshooting",
+            "Search functionality for help docs",
+            "Contact support option (email or form)",
+            "Link to help in footer and user menu"
+          ]
+        }
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "Launch Preparation & Marketing",
+      "duration": "Week 12",
+      "tasks": [
+        {
+          "id": "7.1",
+          "title": "Create landing page for public marketing",
+          "description": "Build compelling landing page at root (/) with: hero section, features, pricing, testimonials (if available), CTA to sign up.",
+          "priority": "high",
+          "estimated_hours": 6,
+          "dependencies": ["1.2"],
+          "acceptance_criteria": [
+            "/app/page.tsx redesigned as marketing landing page",
+            "Hero section with value prop: 'Stop wasting food. Start meal prepping smarter.'",
+            "Features section highlighting: AI-powered recipes, nutrition tracking, budget savings",
+            "Pricing comparison (free vs pro)",
+            "CTA buttons: 'Start Free' and 'View Demo'",
+            "Mobile responsive and fast-loading"
+          ]
+        },
+        {
+          "id": "7.2",
+          "title": "Set up customer support system",
+          "description": "Configure support email, create auto-response, set up ticketing system (e.g., Help Scout, Zendesk, or simple email).",
+          "priority": "medium",
+          "estimated_hours": 2,
+          "dependencies": ["1.1"],
+          "acceptance_criteria": [
+            "Support email configured (e.g., support@mealprep.ai)",
+            "Auto-response email set up",
+            "Support request form in app (/app/dashboard/support)",
+            "Response time SLA: 24-48 hours",
+            "Knowledge base linked in auto-response"
+          ]
+        },
+        {
+          "id": "7.3",
+          "title": "Create launch announcement content",
+          "description": "Write launch announcement for social media, email newsletter, Product Hunt (if applicable), and blog post.",
+          "priority": "medium",
+          "estimated_hours": 4,
+          "dependencies": ["7.1"],
+          "acceptance_criteria": [
+            "Social media posts drafted (Twitter, LinkedIn, Instagram)",
+            "Email announcement for waitlist/beta users",
+            "Product Hunt submission prepared (title, tagline, description, images)",
+            "Blog post: 'Introducing Meal Prep AI' with screenshots and demo video",
+            "Press kit with logo, screenshots, founder quote"
+          ]
+        },
+        {
+          "id": "7.4",
+          "title": "Set up monitoring and alerting",
+          "description": "Configure uptime monitoring, error tracking (Sentry), and alerts for critical issues (payment failures, API errors).",
+          "priority": "high",
+          "estimated_hours": 3,
+          "dependencies": ["6.1"],
+          "acceptance_criteria": [
+            "Uptime monitoring (UptimeRobot or similar) pinging every 5 min",
+            "Sentry configured for error tracking",
+            "Slack/email alerts for: site down, API error rate >5%, payment webhook failures",
+            "Dashboard for key metrics: uptime, error rate, API costs",
+            "Daily digest email with key stats"
+          ]
+        },
+        {
+          "id": "7.5",
+          "title": "Final pre-launch checklist and QA",
+          "description": "Complete end-to-end testing of all user flows: signup, generate recipes, upgrade to paid, cancel subscription. Check all edge cases.",
+          "priority": "critical",
+          "estimated_hours": 6,
+          "dependencies": ["6.4", "6.5"],
+          "acceptance_criteria": [
+            "Test all user flows on production environment",
+            "Verify: signup, login, password reset, ingredient input, recipe generation, upgrade, payment, cancellation",
+            "Test rate limits (free and paid)",
+            "Test on multiple browsers (Chrome, Safari, Firefox)",
+            "Test on mobile (iOS and Android)",
+            "No broken links or 404 errors",
+            "All environment variables confirmed in production"
+          ]
+        },
+        {
+          "id": "7.6",
+          "title": "Launch and monitor for first 48 hours",
+          "description": "Publicly announce launch, monitor for issues, respond to user feedback quickly, be ready to deploy hotfixes.",
+          "priority": "critical",
+          "estimated_hours": 16,
+          "dependencies": ["7.1", "7.3", "7.5"],
+          "acceptance_criteria": [
+            "Launch announcement posted on all channels",
+            "Monitor analytics in real-time for first 48 hours",
+            "Respond to support requests within 2 hours",
+            "Fix any critical bugs immediately",
+            "Track key metrics: signups, generations, upgrades, churn",
+            "Celebrate launch! 🎉"
+          ]
+        }
+      ]
+    }
+  ],
+  "success_metrics": {
+    "technical": {
+      "uptime": "99.5%+",
+      "api_response_time": "<15 seconds for recipe generation",
+      "lighthouse_score": "90+ performance, 100 accessibility",
+      "test_coverage": "60%+ for critical paths"
+    },
+    "business": {
+      "signups": "100+ in first week",
+      "conversion_rate": "15%+ free to paid within 7 days",
+      "retention": "70%+ 7-day retention",
+      "nps_score": "40+ from beta testers"
+    }
+  },
+  "future_phases": {
+    "phase_8": "Barcode scanning for ingredient input",
+    "phase_9": "Photo recognition with device camera",
+    "phase_10": "Weekly meal plan calendar view",
+    "phase_11": "Grocery delivery API integration (Instacart)",
+    "phase_12": "Social features (share recipes with friends)"
+  }
+}
