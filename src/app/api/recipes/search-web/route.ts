@@ -163,6 +163,8 @@ export async function POST() {
       source_url: recipe.url || null,
     }));
 
+    console.log('Attempting to save recipes:', recipesToSave.length);
+
     const { data: savedRecipes, error: saveError } = await supabase
       .from('recipes')
       .insert(recipesToSave)
@@ -170,8 +172,24 @@ export async function POST() {
 
     if (saveError) {
       console.error('Error saving recipes:', saveError);
+      console.error('Save error code:', saveError.code);
+      console.error('Save error message:', saveError.message);
+      console.error('Save error hint:', saveError.hint);
+      console.error('Save error details:', saveError.details);
+
+      // Check if it's a missing column error
+      if (saveError.code === '42703') {
+        return NextResponse.json({
+          error: 'Database schema needs to be updated',
+          details: 'Please run migration 008_add_recipe_source_and_notes.sql in your Supabase SQL Editor to add the required columns (source, source_url).',
+          migration: 'supabase/migrations/008_add_recipe_source_and_notes.sql'
+        }, { status: 500 });
+      }
+
       return NextResponse.json({
-        error: 'Failed to save recipes'
+        error: 'Failed to save recipes to database',
+        details: saveError.message || saveError.hint || saveError.details || 'Unknown database error',
+        code: saveError.code
       }, { status: 500 });
     }
 

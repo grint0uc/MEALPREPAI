@@ -122,6 +122,12 @@ export default function GeneratePage() {
       if (!response.ok) {
         if (data.insufficientCredits) {
           setError(data.error);
+        } else if (data.migration) {
+          // Database migration needed
+          setError(`${data.error}\n\nDetails: ${data.details}\n\nPlease run the migration: ${data.migration}`);
+        } else if (data.details) {
+          // Show detailed error message
+          setError(`${data.error}\n\nDetails: ${data.details}`);
         } else {
           setError(data.error || 'Failed to generate recipes');
         }
@@ -284,7 +290,7 @@ export default function GeneratePage() {
         {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700 text-sm">{error}</p>
+            <p className="text-red-700 text-sm whitespace-pre-wrap">{error}</p>
           </div>
         )}
 
